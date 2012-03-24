@@ -1,0 +1,3 @@
+Declare and initialize multiple variable with std::tuple like std::tie.
+
+See test about usage.
