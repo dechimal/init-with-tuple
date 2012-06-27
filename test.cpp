@@ -15,7 +15,7 @@ int main()
     assert(z == "hoge");
     std::cout << x << "," << z << std::endl;
 
-    INIT_WITH_TUPLE((x)(hoge<int, int>::type y)(z), std::make_tuple<int, int, std::string>(3, 4, "fuga"));
+    INIT_WITH_TUPLE((x)(hoge<int, int> y)(z), std::make_tuple<int, int, std::string>(3, 4, "fuga"));
     assert(x == 3);
     assert(y == 4);
     assert(z == "fuga");
