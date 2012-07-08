@@ -26,5 +26,8 @@ int main()
     assert(c == "fuga");
     std::cout << b << "," << c << std::endl;
 
+    INIT_WITH_TUPLE_AUTO((e1)(e2)(e3), std::vector<int>{1, 2, 3});
+    std::cout << '[' << e1 << ", " << e2 << ", " << e3 << "]\n";
+
     return 0;
 }

@@ -1,4 +1,6 @@
 #include <utility>
+#include <tuple>
+#include <vector>
 #include <type_traits>
  
 #include "boost/preprocessor/cat.hpp"
@@ -13,14 +15,15 @@
 
 namespace init_with_tuple {
 
+namespace aux {
+
 struct ignore_t {
     template<typename T> constexpr void operator=(T&&) const noexcept {}
 };
 
-constexpr ignore_t ignore{};
+}
 
-template<std::size_t N>
-using nat = std::integral_constant<std::size_t, N>;
+constexpr aux::ignore_t ignore{};
 
 namespace traits {
 
@@ -30,19 +33,35 @@ struct element_access;
 template<typename ...Elems>
 struct element_access<std::tuple<Elems...>> {
     template<typename I, typename Tup>
-    static auto get(I, Tup && tup) noexcept -> decltype(std::get<I::value>(std::forward<Tup>(tup))) {
+    static auto get(I, Tup && tup) noexcept(noexcept(std::get<I::value>(std::forward<Tup>(tup)))) -> decltype(std::get<I::value>(std::forward<Tup>(tup))) {
         return std::get<I::value>(std::forward<Tup>(tup));
+    }
+};
+
+template<typename T>
+struct element_access<std::vector<T>> {
+    template<typename I>
+    static auto get(I, std::vector<T> const & v) noexcept(noexcept(v[I::value])) -> decltype(v[I::value]) {
+        return v[I::value];
+    }
+    template<typename I>
+    static auto get(I, std::vector<T> && v) noexcept(noexcept(std::move(v[I::value]))) -> decltype(std::move(v[I::value])) {
+        return std::move(v[I::value]);
     }
 };
 
 }
 
+namespace aux {
+
 template<typename T>
 struct element_access
     : traits::element_access<
-          typename std::remove_reference<
-              typename std::remove_cv<T>::type>::type>
+          typename std::remove_cv<
+              typename std::remove_reference<T>::type>::type>
 {};
+
+}
 
 }
 
@@ -61,7 +80,7 @@ struct element_access
 #define INIT_WITH_TUPLE_M(r, d, i, elem) INIT_WITH_TUPLE_M_I(BOOST_PP_TUPLE_REM(2) d, i, BOOST_PP_TUPLE_REM(1) elem)
 #define INIT_WITH_TUPLE_M_I(d, i, elem) INIT_WITH_TUPLE_M_II(d, i, elem)
 #define INIT_WITH_TUPLE_M_II(tmp, type, i, ...) \
-    ; INIT_WITH_TUPLE_INSERT_IGNORE_IF_EMPTY(__VA_ARGS__) = init_with_tuple::element_access<type>().get(init_with_tuple::nat<i>{}, std::forward<type>(tmp))
+    ; INIT_WITH_TUPLE_INSERT_IGNORE_IF_EMPTY(__VA_ARGS__) = init_with_tuple::aux::element_access<type>::get(std::integral_constant<std::size_t, i>{}, std::forward<type>(tmp))
 #define INIT_WITH_TUPLE_INSERT_IGNORE_IF_EMPTY(...) \
     BOOST_PP_IIF(INIT_WITH_TUPLE_IS_EMPTY(__VA_ARGS__), init_with_tuple::ignore BOOST_PP_TUPLE_EAT, BOOST_PP_TUPLE_REM)()(__VA_ARGS__)
 
