@@ -1,3 +1,6 @@
+#if !defined INIT_WITH_TUPLE_HPP_INCLUDED_
+#define      INIT_WITH_TUPLE_HPP_INCLUDED_
+
 #include <utility>
 #include <tuple>
 #include <vector>
@@ -29,26 +32,6 @@ namespace traits {
 
 template<typename, typename = void>
 struct element_access;
-
-template<typename ...Elems>
-struct element_access<std::tuple<Elems...>> {
-    template<typename I, typename Tup>
-    static auto get(I, Tup && tup) noexcept(noexcept(std::get<I::value>(std::forward<Tup>(tup)))) -> decltype(std::get<I::value>(std::forward<Tup>(tup))) {
-        return std::get<I::value>(std::forward<Tup>(tup));
-    }
-};
-
-template<typename T>
-struct element_access<std::vector<T>> {
-    template<typename I>
-    static auto get(I, std::vector<T> const & v) noexcept(noexcept(v[I::value])) -> decltype(v[I::value]) {
-        return v[I::value];
-    }
-    template<typename I>
-    static auto get(I, std::vector<T> && v) noexcept(noexcept(std::move(v[I::value]))) -> decltype(std::move(v[I::value])) {
-        return std::move(v[I::value]);
-    }
-};
 
 }
 
@@ -108,3 +91,5 @@ struct element_access
 
 #define INIT_WITH_TUPLE_CAT(...) INIT_WITH_TUPLE_CAT_I(__VA_ARGS__)
 #define INIT_WITH_TUPLE_CAT_I(x, ...) x ## __VA_ARGS__
+
+#endif
