@@ -29,5 +29,10 @@ int main()
     INIT_WITH_TUPLE_AUTO((e1)(e2)(e3), std::vector<int>{1, 2, 3});
     std::cout << '[' << e1 << ", " << e2 << ", " << e3 << "]\n";
 
+    INIT_WITH_TUPLE((int k)(double u), std::make_pair<int,double>(5, 6.7));
+    assert(k == 5);
+    assert(u == 6.7);
+    std::cout << k << "," << u << std::endl;
+
     return 0;
 }
