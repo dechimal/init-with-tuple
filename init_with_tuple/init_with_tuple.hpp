@@ -38,6 +38,14 @@ struct element_access<std::tuple<Elems...>> {
     }
 };
 
+template<typename T, typename K>
+struct element_access<std::pair<T,K>> {
+    template<typename I>
+    static auto get(I, std::pair<T,K> const & v) noexcept(noexcept(std::get<I::value>(v))) -> decltype(std::get<I::value>(v)) {
+        return std::get<I::value>(v);
+    }
+};
+
 template<typename T>
 struct element_access<std::vector<T>> {
     template<typename I>
